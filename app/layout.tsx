@@ -21,6 +21,13 @@ export const metadata: Metadata = {
   description: "A personal task management workspace.",
 };
 
+// Every page reads live, mutable data straight from the database via
+// Prisma (not `fetch`), which Next.js can't detect as "dynamic" on its own —
+// left alone, it silently prerenders these pages once at build time and
+// serves that frozen snapshot forever. This is a live single-user app with
+// no static content at all, so every request must hit the database fresh.
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
   const themeAttr = user.theme === "SYSTEM" ? undefined : user.theme.toLowerCase();
