@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// --- Auth.js required models -------------------------------------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- App enums ------------------------------------------------------------
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RecurrencePattern {
+  DAILY
+  WEEKDAYS
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+}
+
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+// --- User + settings --------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+
+  timezone         String          @default("UTC")
+  language         String          @default("en")
+  dateFormat       String          @default("MMM d, yyyy")
+  defaultPriority  Priority        @default(MEDIUM)
+  defaultReminder  Int? // minutes before due, null = none
+  defaultView      String          @default("today")
+  defaultProjectId String?
+  weekStartsOn     Int             @default(1) // 0 = Sunday, 1 = Monday
+  theme            ThemePreference @default(SYSTEM)
+  accentColor      String? // hex, one of a fixed palette; null = default pine teal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  projects       Project[]       @relation("ProjectOwner")
+  defaultProject Project?        @relation("UserDefaultProject", fields: [defaultProjectId], references: [id], onDelete: SetNull)
+  tasks          Task[]
+  tags           Tag[]
+  recurringTasks RecurringTask[]
+  notifications  Notification[]
+  activityLogs   ActivityLog[]
+  comments       Comment[]
+}
+
+// --- Projects -----------------------------------------------------------
+
+model Project {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  icon        String?
+  color       String    @default("#2f5d50")
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user            User         @relation("ProjectOwner", fields: [userId], references: [id], onDelete: Cascade)
+  tasks           Task[]
+  projectTags     ProjectTag[]
+  defaultForUsers User[]       @relation("UserDefaultProject")
+
+  @@index([userId])
+}
+
+// --- Tags -----------------------------------------------------------------
+
+model Tag {
+  id     String @id @default(cuid())
+  userId String
+  name   String
+  color  String @default("#767a6c")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskTags    TaskTag[]
+  projectTags ProjectTag[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model TaskTag {
+  taskId String
+  tagId  String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@index([tagId])
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@index([tagId])
+}
+
+// --- Recurring tasks --------------------------------------------------
+
+model RecurringTask {
+  id         String             @id @default(cuid())
+  userId     String
+  pattern    RecurrencePattern
+  daysOfWeek Json               @default("[]") // number[], 0=Sun..6=Sat — Json since SQLite has no native scalar-list type
+  interval   Int                @default(1)
+  // Base unit for CUSTOM patterns only (DAILY|WEEKLY|MONTHLY|YEARLY) — lets
+  // "every N {unit}" reuse the same interval math the presets already use.
+  customUnit RecurrencePattern?
+  endDate    DateTime?
+
+  templateTitle       String
+  templateDescription String?
+  templateProjectId   String?
+  templatePriority    Priority @default(MEDIUM)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@index([userId])
+}
+
+// --- Tasks ----------------------------------------------------------------
+
+model Task {
+  id          String  @id @default(cuid())
+  userId      String
+  projectId   String?
+  title       String
+  description String?
+
+  status          TaskStatus @default(TODO)
+  priority        Priority   @default(MEDIUM)
+  progressPercent Int? // 0-100, meaningful while status = IN_PROGRESS
+
+  dueDate     DateTime?
+  dueTime     String? // "HH:mm", kept separate from dueDate for clarity in UI
+  completedAt DateTime?
+
+  recurringTaskId String?
+  sortOrder       Int     @default(0)
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  recurringTask RecurringTask? @relation(fields: [recurringTaskId], references: [id], onDelete: SetNull)
+
+  subtasks      Subtask[]
+  taskTags      TaskTag[]
+  reminders     Reminder[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+  attachments   Attachment[]
+  comments      Comment[]
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@index([projectId])
+  @@index([recurringTaskId])
+}
+
+// --- Subtasks ---------------------------------------------------------
+
+model Subtask {
+  id        String   @id @default(cuid())
+  taskId    String
+  title     String
+  done      Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// --- Reminders --------------------------------------------------------
+
+model Reminder {
+  id            String    @id @default(cuid())
+  taskId        String
+  offsetMinutes Int? // minutes before due; null means "at due time"
+  customAt      DateTime? // used only when the reminder is a fixed custom time
+  createdAt     DateTime  @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// --- Notifications ------------------------------------------------------
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  taskId    String?
+  type      String
+  message   String
+  channel   NotificationChannel @default(IN_APP)
+  read      Boolean             @default(false)
+  createdAt DateTime            @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task? @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+// --- Activity log -------------------------------------------------------
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+  field     String
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// --- Comments -------------------------------------------------------------
+
+model Comment {
+  id        String   @id @default(cuid())
+  taskId    String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// --- Attachments (schema-ready, no upload UI in MVP) -------------------
+
+model Attachment {
+  id        String   @id @default(cuid())
+  taskId    String
+  fileName  String
+  fileUrl   String
+  fileSize  Int
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}

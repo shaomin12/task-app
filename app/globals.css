@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --color-paper: #f5f2ea;
+  --color-surface: #ffffff;
+  --color-ink: #24261e;
+  --color-muted: #767a6c;
+  --color-rule: #ddd7c4;
+  --color-rule-strong: #c7bfa8;
+  --color-accent: #2f5d50;
+  --color-accent-hover: #244840;
+  --color-accent-soft: #e4ece8;
+  --color-low: #4c7a4f;
+  --color-medium: #a97a1f;
+  --color-high: #a8383a;
+  --color-danger-soft: #f7e9e8;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Status-funnel ordinal ramp (validated: dataviz skill, light mode) */
+  --chart-todo: #86b6ef;
+  --chart-in-progress: #5598e7;
+  --chart-submitted: #2a78d6;
+  --chart-under-review: #1c5cab;
+  --chart-completed: #104281;
+  --chart-cancelled: var(--color-muted);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --color-paper: #1a1c17;
+    --color-surface: #232520;
+    --color-ink: #e9e5d6;
+    --color-muted: #9a9587;
+    --color-rule: #383a31;
+    --color-rule-strong: #46483d;
+    --color-accent: #86bba9;
+    --color-accent-hover: #9fcdbd;
+    --color-accent-soft: #29342f;
+    --color-low: #7fae7f;
+    --color-medium: #d1a34f;
+    --color-high: #d97b7b;
+    --color-danger-soft: #3a2626;
+
+    --chart-todo: #b7d3f6;
+    --chart-in-progress: #86b6ef;
+    --chart-submitted: #5598e7;
+    --chart-under-review: #2a78d6;
+    --chart-completed: #1c5cab;
+    --chart-cancelled: var(--color-muted);
   }
 }
 
+:root[data-theme="dark"] {
+  --color-paper: #1a1c17;
+  --color-surface: #232520;
+  --color-ink: #e9e5d6;
+  --color-muted: #9a9587;
+  --color-rule: #383a31;
+  --color-rule-strong: #46483d;
+  --color-accent: #86bba9;
+  --color-accent-hover: #9fcdbd;
+  --color-accent-soft: #29342f;
+  --color-low: #7fae7f;
+  --color-medium: #d1a34f;
+  --color-high: #d97b7b;
+  --color-danger-soft: #3a2626;
+
+  --chart-todo: #b7d3f6;
+  --chart-in-progress: #86b6ef;
+  --chart-submitted: #5598e7;
+  --chart-under-review: #2a78d6;
+  --chart-completed: #1c5cab;
+  --chart-cancelled: var(--color-muted);
+}
+
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-surface: var(--color-surface);
+  --color-ink: var(--color-ink);
+  --color-muted: var(--color-muted);
+  --color-rule: var(--color-rule);
+  --color-rule-strong: var(--color-rule-strong);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-low: var(--color-low);
+  --color-medium: var(--color-medium);
+  --color-high: var(--color-high);
+  --color-danger-soft: var(--color-danger-soft);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
