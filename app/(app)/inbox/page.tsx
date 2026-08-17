@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/current-user";
 import { listTasksForUser } from "@/lib/tasks";
 import { listProjectsForUser } from "@/lib/projects";
@@ -20,12 +21,14 @@ export default async function InboxPage() {
         </p>
       </div>
       <TaskForm projects={projects} defaultPriority={user.defaultPriority} />
-      <TaskBrowser
-        initialTasks={tasks}
-        projects={projects}
-        noProject
-        emptyMessage="Inbox zero — nothing unassigned."
-      />
+      <Suspense>
+        <TaskBrowser
+          initialTasks={tasks}
+          projects={projects}
+          noProject
+          emptyMessage="Inbox zero — nothing unassigned."
+        />
+      </Suspense>
     </div>
   );
 }

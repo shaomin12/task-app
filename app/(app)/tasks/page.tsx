@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/current-user";
 import { listTasksForUser } from "@/lib/tasks";
 import { listProjectsForUser } from "@/lib/projects";
@@ -19,7 +20,9 @@ export default async function AllTasksPage() {
         defaultPriority={user.defaultPriority}
         preselectProjectId={user.defaultProjectId ?? undefined}
       />
-      <TaskBrowser initialTasks={tasks} projects={projects} />
+      <Suspense>
+        <TaskBrowser initialTasks={tasks} projects={projects} />
+      </Suspense>
     </div>
   );
 }

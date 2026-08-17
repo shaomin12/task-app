@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/current-user";
 import { listTasksForUser } from "@/lib/tasks";
 import { listProjectsForUser } from "@/lib/projects";
@@ -16,13 +17,15 @@ export default async function CompletedPage() {
         <h1 className="font-display text-2xl text-ink">Completed</h1>
         <p className="text-sm text-muted">Tasks marked Complete.</p>
       </div>
-      <TaskBrowser
-        initialTasks={tasks}
-        projects={projects}
-        lockedStatus="COMPLETED"
-        defaultSort="updated"
-        emptyMessage="Nothing completed yet."
-      />
+      <Suspense>
+        <TaskBrowser
+          initialTasks={tasks}
+          projects={projects}
+          lockedStatus="COMPLETED"
+          defaultSort="updated"
+          emptyMessage="Nothing completed yet."
+        />
+      </Suspense>
     </div>
   );
 }

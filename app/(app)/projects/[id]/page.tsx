@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/current-user";
@@ -47,13 +48,15 @@ export default async function ProjectPage({
       <ProjectDescription projectId={id} initialDescription={project.description} />
       <ProjectTags projectId={id} initialTags={project.projectTags.map((pt) => pt.tag)} />
       <ProjectProgress completedTaskCount={completedTaskCount} taskCount={tasks.length} />
-      <ProjectTaskViews
-        projectId={id}
-        tasks={tasks}
-        kanbanTasks={kanbanTasks}
-        projects={projects}
-        defaultPriority={user.defaultPriority}
-      />
+      <Suspense>
+        <ProjectTaskViews
+          projectId={id}
+          tasks={tasks}
+          kanbanTasks={kanbanTasks}
+          projects={projects}
+          defaultPriority={user.defaultPriority}
+        />
+      </Suspense>
     </div>
   );
 }
