@@ -11,11 +11,11 @@ import {
 import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { computeNextDueDate } from "@/lib/recurrence";
-import { OVERDUE_ELIGIBLE_STATUSES } from "@/lib/status";
+import { OVERDUE_ELIGIBLE_STATUSES, STATUS_ORDER } from "@/lib/status";
 import type { TaskDTO, TaskStatus, Priority } from "@/lib/types";
 
 export const taskInclude = {
-  project: { select: { id: true, name: true, color: true, icon: true } },
+  project: { select: { id: true, name: true, color: true, icon: true, archivedAt: true } },
   taskTags: { include: { tag: true } },
   subtasks: { orderBy: { sortOrder: "asc" as const } },
   recurringTask: {
@@ -33,7 +33,7 @@ export const taskInclude = {
 
 type TaskWithRelations = Prisma.TaskGetPayload<{ include: typeof taskInclude }>;
 
-const ACTIVE_STATUSES: TaskStatus[] = ["TODO", "IN_PROGRESS", "SUBMITTED", "UNDER_REVIEW"];
+const ACTIVE_STATUSES: TaskStatus[] = ["TODO", "IN_PROGRESS", "UNDER_REVIEW"];
 
 // Flattens the taskTags join rows into a plain `tags` array for the client,
 // and the _count aggregate into a plain commentCount.
@@ -62,6 +62,7 @@ export interface TaskFilters {
   priority?: Priority | Priority[];
   tagId?: string;
   overdueOnly?: boolean;
+  noDueDate?: boolean;
   sort?: "due" | "priority" | "created" | "updated" | "alpha" | "manual";
   // "Load N pages worth" rather than a true offset — page=2 fetches the
   // first 2*TASK_PAGE_SIZE rows from the top, so a "Load more" refetch after
@@ -88,6 +89,7 @@ function buildTaskWhere(userId: string, filters: TaskFilters): Prisma.TaskWhereI
         : {}),
     ...(priorities && priorities.length > 0 && { priority: { in: priorities } }),
     ...(filters.tagId && { taskTags: { some: { tagId: filters.tagId } } }),
+    ...(filters.noDueDate && { dueDate: null }),
     // SQLite's `contains` has no `mode` option — its default LIKE-based match
     // is already case-insensitive for ASCII, which covers this app's usage.
     ...(filters.q && {
@@ -420,16 +422,8 @@ export async function getStatusBreakdown(userId: string): Promise<StatusBreakdow
   });
 
   const counts = new Map(grouped.map((g) => [g.status, g._count._all]));
-  const order: TaskStatus[] = [
-    "TODO",
-    "IN_PROGRESS",
-    "SUBMITTED",
-    "UNDER_REVIEW",
-    "COMPLETED",
-    "CANCELLED",
-  ];
 
-  return order.map((status) => ({ status, count: counts.get(status) ?? 0 }));
+  return STATUS_ORDER.map((status) => ({ status, count: counts.get(status) ?? 0 }));
 }
 
 export async function listTasksInRange(

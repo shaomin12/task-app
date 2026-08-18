@@ -40,6 +40,7 @@ async function fetchTasks(
   const status = lockedStatus ?? filters.status;
   if (status) params.set("status", status);
   if (filters.priority.length > 0) params.set("priority", filters.priority.join(","));
+  if (filters.noDueDate) params.set("noDueDate", "true");
   if (noProject) {
     params.set("noProject", "true");
   } else {
@@ -78,9 +79,31 @@ export function TaskBrowser({
     ...defaultFilters,
     status: searchParams.get("status") ?? "",
     priority: parsePriorityParam(searchParams.get("priority")),
+    noDueDate: searchParams.get("noDueDate") === "true",
   }));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
+
+  // The App Router reuses this component across same-route navigations (e.g.
+  // clicking one Dashboard stat tile after another already landed here), so
+  // the useState initializer above only ever applies on the very first
+  // visit. Re-derive filters from the URL during render whenever its query
+  // actually changes — React's endorsed way to adjust state on a changed
+  // "prop" without an extra effect-triggered render.
+  const searchParamsKey = searchParams.toString();
+  const [syncedParamsKey, setSyncedParamsKey] = useState(searchParamsKey);
+  if (searchParamsKey !== syncedParamsKey) {
+    setSyncedParamsKey(searchParamsKey);
+    setFilters((f) => ({
+      ...f,
+      status: searchParams.get("status") ?? "",
+      priority: parsePriorityParam(searchParams.get("priority")),
+      noDueDate: searchParams.get("noDueDate") === "true",
+    }));
+    setPage(1);
+    setSelectedIds(new Set());
+  }
+
   const isDefault = isDefaultTaskFilters(filters) && filters.sort === defaultSort;
 
   function updateFilters(next: Partial<Filters>) {

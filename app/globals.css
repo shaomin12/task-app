@@ -18,8 +18,7 @@
   /* Status-funnel ordinal ramp (validated: dataviz skill, light mode) */
   --chart-todo: #86b6ef;
   --chart-in-progress: #5598e7;
-  --chart-submitted: #2a78d6;
-  --chart-under-review: #1c5cab;
+  --chart-under-review: #2a78d6;
   --chart-completed: #104281;
   --chart-cancelled: var(--color-muted);
 }
@@ -42,7 +41,6 @@
 
     --chart-todo: #b7d3f6;
     --chart-in-progress: #86b6ef;
-    --chart-submitted: #5598e7;
     --chart-under-review: #2a78d6;
     --chart-completed: #1c5cab;
     --chart-cancelled: var(--color-muted);
@@ -66,7 +64,6 @@
 
   --chart-todo: #b7d3f6;
   --chart-in-progress: #86b6ef;
-  --chart-submitted: #5598e7;
   --chart-under-review: #2a78d6;
   --chart-completed: #1c5cab;
   --chart-cancelled: var(--color-muted);

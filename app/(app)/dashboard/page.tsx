@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         <StatTile
           label="No Due Date"
           value={stats.noDueDateCount}
-          href="/tasks"
+          href="/tasks?noDueDate=true"
           icon={CalendarX2}
         />
         <StatTile

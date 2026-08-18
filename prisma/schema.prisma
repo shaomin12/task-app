@@ -50,7 +50,6 @@ model VerificationToken {
 enum TaskStatus {
   TODO
   IN_PROGRESS
-  SUBMITTED
   UNDER_REVIEW
   COMPLETED
   CANCELLED

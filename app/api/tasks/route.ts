@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     priority: priorityParam ? (priorityParam.split(",") as Priority[]) : undefined,
     tagId: params.get("tagId") ?? undefined,
     overdueOnly: params.get("overdueOnly") === "true",
+    noDueDate: params.get("noDueDate") === "true",
     sort: (params.get("sort") as TaskFilters["sort"]) ?? undefined,
     page: pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : undefined,
   };

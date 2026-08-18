@@ -10,6 +10,7 @@ export interface TaskFilterState {
   status: string;
   priority: PriorityValue[];
   projectId: string;
+  noDueDate: boolean;
 }
 
 export const DEFAULT_TASK_FILTERS: TaskFilterState = {
@@ -17,6 +18,7 @@ export const DEFAULT_TASK_FILTERS: TaskFilterState = {
   status: "",
   priority: [],
   projectId: "",
+  noDueDate: false,
 };
 
 export function isDefaultTaskFilters(filters: TaskFilterState) {
@@ -24,7 +26,8 @@ export function isDefaultTaskFilters(filters: TaskFilterState) {
     filters.q === "" &&
     filters.status === "" &&
     filters.priority.length === 0 &&
-    filters.projectId === ""
+    filters.projectId === "" &&
+    !filters.noDueDate
   );
 }
 
@@ -108,6 +111,14 @@ export function TaskFilterBar({
           ))}
         </select>
       )}
+      <button
+        type="button"
+        onClick={() => onChange({ ...filters, noDueDate: !filters.noDueDate })}
+        aria-pressed={filters.noDueDate}
+        className={`rounded-md border border-rule px-2 py-1.5 text-sm ${filters.noDueDate ? "bg-accent text-surface" : "text-muted hover:text-ink"}`}
+      >
+        No due date
+      </button>
       {children}
       {!isDefaultTaskFilters(filters) && (
         <button

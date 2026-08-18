@@ -1,7 +1,6 @@
 export type TaskStatus =
   | "TODO"
   | "IN_PROGRESS"
-  | "SUBMITTED"
   | "UNDER_REVIEW"
   | "COMPLETED"
   | "CANCELLED";
@@ -35,6 +34,7 @@ export interface ProjectSummary {
   name: string;
   color: string;
   icon: string | null;
+  archivedAt: string | null;
 }
 
 export interface SubtaskDTO {

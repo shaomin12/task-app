@@ -144,6 +144,7 @@ export function TaskRows({
                       style={{ backgroundColor: `${task.project.color}22`, color: task.project.color }}
                     >
                       {task.project.name}
+                      {task.project.archivedAt && " · Archived"}
                     </span>
                   )}
                   {task.tags.map((tag) => (

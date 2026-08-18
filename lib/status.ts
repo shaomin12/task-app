@@ -3,7 +3,6 @@ import type { TaskStatus } from "@/lib/types";
 export const STATUS_ORDER: TaskStatus[] = [
   "TODO",
   "IN_PROGRESS",
-  "SUBMITTED",
   "UNDER_REVIEW",
   "COMPLETED",
   "CANCELLED",
@@ -12,9 +11,8 @@ export const STATUS_ORDER: TaskStatus[] = [
 export const STATUS_LABELS: Record<TaskStatus, string> = {
   TODO: "Haven't started",
   IN_PROGRESS: "Ongoing",
-  SUBMITTED: "Submit",
   UNDER_REVIEW: "Under review",
-  COMPLETED: "Complete",
+  COMPLETED: "Completed",
   CANCELLED: "Cancelled",
 };
 
@@ -29,7 +27,6 @@ export const OVERDUE_ELIGIBLE_STATUSES: TaskStatus[] = ["TODO", "IN_PROGRESS"];
 export const STATUS_CHART_VAR: Record<TaskStatus, string> = {
   TODO: "--chart-todo",
   IN_PROGRESS: "--chart-in-progress",
-  SUBMITTED: "--chart-submitted",
   UNDER_REVIEW: "--chart-under-review",
   COMPLETED: "--chart-completed",
   CANCELLED: "--chart-cancelled",

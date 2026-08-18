@@ -169,12 +169,13 @@ export function KanbanBoard({
       </div>
 
       <DndContext
+        id="kanban-board"
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-2 overflow-x-auto pb-4">
           {STATUS_ORDER.map((status) => (
             <KanbanColumn
               key={status}
